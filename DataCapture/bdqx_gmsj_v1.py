@@ -6,6 +6,7 @@
 @Auther       :Xuz
 @Version      :1.0
 @Notes        :下载百度的迁徙规模指数数据
+              迁徙规模指数：反映迁入或迁出人口规模，城市间可横向对比
 '''
 from urllib import request
 import re
