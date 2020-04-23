@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 '''
-@File         :bdqx_gmsj_v1.py
-@Time         :2020/04/23 11:14:46
+@File         :bdqx_zrsj_v1.py
+@Time         :2020/04/23 16:16:35
 @Auther       :Xuz
 @Version      :1.0
-@Notes        :下载百度迁徙-迁徙规模指数数据
-              迁徙规模指数：反映迁入或迁出人口规模，城市间可横向对比
+@Notes        :下载百度迁徙-分市逐日数据
 '''
 from urllib import request
 import re
@@ -43,94 +42,114 @@ def getData(tarUrl,patList):    #根据url和数据格式获取数据，返回�
         res.append(result)
     return res
 
-def scaleData(pFilename,startDate,endDate): #存储路径，起止时间
+def everyData(pFilename,date,cTarget): #存储路径，数据日期，给出的流向城市数目
     f = xlwt.Workbook()
-    sheet1 = f.add_sheet(u'2019年迁徙规模指数', cell_overwrite_ok=True)
-    sheet2 = f.add_sheet(u'2020年迁徙规模指数', cell_overwrite_ok=True)
-
-    sDate=startDate
-    eDate=endDate
-    filename=pFilename
+    sheet1 = f.add_sheet(u'2020年分市迁徙流向', cell_overwrite_ok=True)    
+    row0 = [u'所在城市',u'迁入来源地',u'比例',u'省份',u'当日迁入总规模',u'所在城市',u'迁出目的地',u'比例',u'省份',u'当日迁出总规模']
+    # 写入首行
+    for i in range(0, len(row0)):
+        sheet1.write(0, i, row0[i], set_style('Times New Roman', 200, True))
     
-    #2019和2020年数据格式
-    patDate2019 = '"(2019.*?)":\d+\.*\d.*?\D'
-    patData2019 = '"2019.*?":(\d+\.*\d.*?)\D'
-    patDate2020 = '"(2020.*?)":\d+\.*\d.*?\D'
-    patData2020 = '"2020.*?":(\d+\.*\d.*?)\D'  
-    #规模指数总pat
-    patScale=[patDate2019,patData2019,patDate2020,patData2020]
+    tDate=date
+    tCount=int(cTarget)
+    filename =pFilename
+    compCitylist_MoveIn=[]    #包含全部流向的迁入城市
+    compCitylist_MoveOut=[]   #包含全部流向的迁出城市
 
-    #全国数据
-    countryUrlin="http://huiyan.baidu.com/migration/historycurve.jsonp?dt=country&id=0&type=move_in&startDate="+str(sDate)+"&endDate="+str(eDate)+"&callback=jsonp"
-    resCouList1=getData(countryUrlin,patScale)
-    row0_19=resCouList1[0]
-    row1_19=resCouList1[1]
-    row0_20=resCouList1[2]
-    row1_20=resCouList1[3]
-    sheet1.write(0,0,u'城市',set_style('Times New Roman', 200, True))
-    sheet1.write(1,0,u'全国',set_style('Times New Roman', 200, True))
-    sheet2.write(0,0,u'城市',set_style('Times New Roman', 200, True))
-    sheet2.write(1,0,u'全国',set_style('Times New Roman', 200, True))
-    for i1 in range(0,len(row0_19)):
-        sheet1.write(0,2*i1+1,'t'+row0_19[i1]+'迁入',set_style('Times New Roman', 200, True)) 
-        sheet1.write(1,2*i1+1,float(row1_19[i1])*10000)
-    for i2 in range(0,len(row0_20)):
-        sheet2.write(0,2*i2+1,'t'+row0_20[i2]+'迁入',set_style('Times New Roman', 200, True)) 
-        sheet2.write(1,2*i2+1,float(row1_20[i2])*10000)
-    countryUrlout="http://huiyan.baidu.com/migration/historycurve.jsonp?dt=country&id=0&type=move_out&startDate="+str(sDate)+"&endDate="+str(eDate)+"&callback=jsonp"  
-    resCouList2=getData(countryUrlout,patScale)
-    r2ow0_19=resCouList2[0]
-    r2ow1_19=resCouList2[1]
-    r2ow0_20=resCouList2[2]
-    r2ow1_20=resCouList2[3]
-    for i1 in range(0,len(r2ow0_19)):
-        sheet1.write(0,2*i1+2,'t'+r2ow0_19[i1]+'迁出',set_style('Times New Roman', 200, True)) 
-        sheet1.write(1,2*i1+2,float(r2ow1_19[i1])*10000)
-    for i2 in range(0,len(r2ow0_20)):
-        sheet2.write(0,2*i2+2,'t'+r2ow0_20[i2]+'迁出',set_style('Times New Roman', 200, True)) 
-        sheet2.write(1,2*i2+2,float(r2ow1_20[i2])*10000)
-    
+    #分市数据格式
+    patName = '{"city_name":"(.*?)","province_name":".*?","value":.*?}'
+    patValue = '{"city_name":".*?","province_name":".*?","value":(.*?)}'
+    patPName = '{"city_name":".*?","province_name":"(.*?)","value":.*?}'
+    #分市总pat
+    totalPat=[patName,patValue,patPName]
+    #总规模数据格式
+    patScaleDate= '"%s":(\d+\.*\d.*?)\D' % tDate
+    patScale=[patScaleDate]
+
     #迁入数据
     for i in range(0,len(ID)):
-        cityUrlin = "http://huiyan.baidu.com/migration/historycurve.jsonp?dt=city&id="+str(ID[i])+"&type=move_in&startDate="+str(sDate)+"&endDate="+str(eDate)+"&callback=jsonp"
-        reslistIn=getData(cityUrlin,patScale)
-        row19_0=reslistIn[0]
-        row19_i=reslistIn[1]
-        row20_0=reslistIn[2]
-        row20_i=reslistIn[3]
-        #写入城市
-        sheet1.write(i+2,0,name[i]) 
-        sheet2.write(i+2,0,name[i])
-        for i1 in range(0,len(row19_0)):
-            sheet1.write(i+2,2*i1+1,float(row19_i[i1])*10000)  
-        for i2 in range(0,len(row20_0)):
-            sheet2.write(i+2,2*i2+1,float(row20_i[i2])*10000)
-        f.save(filename)
+        moveInurl = "http://huiyan.baidu.com/migration/cityrank.jsonp?dt=city&id="+str(ID[i])+"&type=move_in&date="+str(tDate)+"&callback=jsonp"        
+        resCouList1=getData(moveInurl,totalPat)
+        column0 = name[i]
+        column1 = resCouList1[0]
+        column2 = resCouList1[1]
+        column3 = resCouList1[2] 
+        moveInScaleurl="http://huiyan.baidu.com/migration/historycurve.jsonp?dt=city&id="+str(ID[i])+"&type=move_in&callback=jsonp"
+        resCouList12=getData(moveInScaleurl,patScale)
+        column4=resCouList12[0]
+
+        #判断目标数目
+        maxlen=max(len(column1),len(column2),len(column3),tCount)
+        max1=max(len(column1),len(column2),len(column3))        
+        #写入数据
+        for i1 in range(0,maxlen):
+            sheet1.write(i1 + maxlen*i + 1, 0, column0)
+            sheet1.write(i1 + maxlen*i + 1, 4, float(column4)*10000)
+        for i2 in range(0,len(column1)):
+            sheet1.write(i2 + maxlen*i + 1, 1, column1[i2])
+        for i3 in range(0,len(column2)):            
+            sheet1.write(i3 + maxlen*i + 1, 2, column2[i3])
+        for i4 in range(0,len(column3)):    
+            sheet1.write(i4 + maxlen*i + 1, 3, column3[i4])
         print (name[i],"in done")
+        f.save(filename)
+        if max1 < tCount:
+            compCitylist_MoveIn.append([ID[i],name[i]])        
         time.sleep(1)
+
     #迁出数据
     for i in range(0, len(ID)):
-        cityUrlout = "http://huiyan.baidu.com/migration/historycurve.jsonp?dt=city&id="+str(ID[i])+"&type=move_out&startDate="+str(sDate)+"&endDate="+str(eDate)+"&callback=jsonp"
-        reslistOut=getData(cityUrlout,patScale)
-        r2ow19_0=reslistOut[0]
-        r2ow19_i=reslistOut[1]
-        r2ow20_0=reslistOut[2]
-        r2ow20_i=reslistOut[3]
-        for i1 in range(0,len(r2ow19_0)):
-            sheet1.write(i+2,2*i1+2,float(r2ow19_i[i1])*10000)
-        for i2 in range(0,len(r2ow20_0)):
-            sheet2.write(i+2,2*i2+2,float(r2ow20_i[i2])*10000)
-        f.save(filename) 
-        print (name[i],"out done")
-        time.sleep(1)
-    
-    print("规模数据抓取成功")
+        moveOuturl = "http://huiyan.baidu.com/migration/cityrank.jsonp?dt=city&id="+str(ID[i])+"&type=move_out&date="+str(tDate)+"&callback=jsonp"        
+        resCouList2=getData(moveOuturl,totalPat)
+        column20 = name[i]
+        column21 = resCouList2[0]
+        column22 = resCouList2[1]
+        column23 = resCouList2[2]
+        moveOutScaleurl = "http://huiyan.baidu.com/migration/historycurve.jsonp?dt=city&id="+str(ID[i])+"&type=move_out&callback=jsonp"
+        resCouList22=getData(moveOutScaleurl,patScale)        
+        column24 = resCouList22[0]
 
-if __name__=='__main__':    
-    startdate='20190112'
-    enddate='20200421'
-    filename = 'F:/DataGet/BDqianxi/'+'scaledata_'+str(enddate)+'.xls'    
-    print('开始抓取')
-    scaleData(filename,startdate,enddate)
-    print('结束抓取')
-    #time.sleep(300)
+        maxlen2=max(len(column21),len(column22),len(column23),tCount)
+        max2=max(len(column21),len(column22),len(column23)) 
+        for i1 in range(0,maxlen2):
+            sheet1.write(i1 + maxlen2*i + 1, 5, column20)
+            sheet1.write(i1 + maxlen2*i + 1, 9, float(column24)*10000)
+        for i2 in range(0,len(column21)):
+            sheet1.write(i2 + maxlen2*i + 1, 6, column21[i2])
+        for i3 in range(0,len(column22)):            
+            sheet1.write(i3 + maxlen2*i + 1, 7, column22[i3])
+        for i4 in range(0,len(column23)):    
+            sheet1.write(i4 + maxlen2*i + 1, 8, column23[i4])
+        f.save(filename)
+        print (name[i],"out done")
+        if max2 < tCount:
+            compCitylist_MoveOut.append([ID[i],name[i]]) 
+        time.sleep(1)
+    print (str(tDate),"抓取成功") 
+    return compCitylist_MoveIn,compCitylist_MoveOut
+
+def text_save(lgpath,list2w1,list2w2):   #日志路径，迁入列表，迁出列表
+    file = open(lgpath,'a')
+    file.write('=包含全部流向的迁入城市:\n')
+    for i in range(len(list2w1)):
+        s = str(list2w1[i]).replace('[','').replace(']','')#去除[]
+        s = s.replace("'",'').replace(',','') +'\n'   #去除单引号，逗号，每行末尾追加换行符
+        file.write(s)
+    file.write('=包含全部流向的迁出城市:\n')
+    for i in range(len(list2w2)):
+        s = str(list2w2[i]).replace('[','').replace(']','')
+        s = s.replace("'",'').replace(',','') +'\n'   
+        file.write(s)    
+    file.close()
+    print("保存日志文件成功") 
+
+if __name__=='__main__':
+    date=[20200419]
+    for i in date:
+        print('开始抓取')
+        fileName = 'F:/DataGet/BDqianxi/'+'Total'+str(i)+'.xls'
+        logPath='F:/DataGet/BDqianxi/'+'logTotal'+str(i)+'.txt'
+        list1,list2=everyData(fileName,i,100)
+        text_save(logPath,list1,list2)
+        print('结束抓取')
+        #time.sleep(180)

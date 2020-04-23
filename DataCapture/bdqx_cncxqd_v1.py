@@ -5,7 +5,7 @@
 @Time         :2020/04/23 15:15:38
 @Auther       :Xuz
 @Version      :1.0
-@Notes        :下载百度迁徙的城内出行强度数据
+@Notes        :下载百度迁徙-城内出行强度数据
               城内出行强度：该城市有出行的人数与该城市居住人口比值的指数化结果
 '''
 from urllib import request
@@ -56,7 +56,7 @@ def innerData(pFilename,cDate):             #存储路径,抓取时间
     patData2019 = '"2019.*?":(\d+\.*\d.*?)\D'
     patDate2020 = '"(2020.*?)":\d+\.*\d.*?\D'
     patData2020 = '"2020.*?":(\d+\.*\d.*?)\D'  
-    #规模指数pat
+    #城内出行总pat
     patScale=[patDate2019,patData2019,patDate2020,patData2020]
 
     sheet1.write(0,0,u'城市',set_style('Times New Roman', 200, True))
