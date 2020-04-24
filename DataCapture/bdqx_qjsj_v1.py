@@ -89,8 +89,8 @@ def everyData_Period(pFilename,date,cTarget,cDate): #存储路径，数据区间
     #分市总pat
     totalPat=[patName,patValue,patPName]
 
-    #迁入数据
     for i in range(0,len(ID)):
+        #迁入数据
         moveInurl = "http://huiyan.baidu.com/migration/cityrank.jsonp?dt=city&id="+str(ID[i])+"&type=move_in&date="+str(tDate)+"&callback=jsonp"        
         resCouList1=getData(moveInurl,totalPat)
         column0 = name[i]
@@ -120,8 +120,7 @@ def everyData_Period(pFilename,date,cTarget,cDate): #存储路径，数据区间
             compCitylist_MoveIn.append([ID[i],name[i]])        
         time.sleep(1)
 
-    #迁出数据
-    for i in range(0, len(ID)):
+        #迁出数据
         moveOuturl = "http://huiyan.baidu.com/migration/cityrank.jsonp?dt=city&id="+str(ID[i])+"&type=move_out&date="+str(tDate)+"&callback=jsonp"        
         resCouList2=getData(moveOuturl,totalPat)
         column20 = name[i]
@@ -166,8 +165,8 @@ def text_save(lgpath,list2w1,list2w2):   #日志路径，迁入列表，迁出�
     print("保存日志文件成功") 
 
 if __name__=='__main__':
-    dateClass=[1,2,3]
-    dataCurrent='20200420'
+    dateClass=[1,3]
+    dataCurrent='20200423'
     for i in dateClass:
         print('开始抓取')
         fileName = 'F:/DataGet/BDqianxi/'+str(i)+'Period_City'+str(dataCurrent)+'.xls'

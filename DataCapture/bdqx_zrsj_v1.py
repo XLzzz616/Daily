@@ -66,8 +66,8 @@ def everyData(pFilename,date,cTarget): #存储路径，数据日期，给出的�
     patScaleDate= '"%s":(\d+\.*\d.*?)\D' % tDate
     patScale=[patScaleDate]
 
-    #迁入数据
     for i in range(0,len(ID)):
+        #迁入数据
         moveInurl = "http://huiyan.baidu.com/migration/cityrank.jsonp?dt=city&id="+str(ID[i])+"&type=move_in&date="+str(tDate)+"&callback=jsonp"        
         resCouList1=getData(moveInurl,totalPat)
         column0 = name[i]
@@ -76,7 +76,7 @@ def everyData(pFilename,date,cTarget): #存储路径，数据日期，给出的�
         column3 = resCouList1[2] 
         moveInScaleurl="http://huiyan.baidu.com/migration/historycurve.jsonp?dt=city&id="+str(ID[i])+"&type=move_in&callback=jsonp"
         resCouList12=getData(moveInScaleurl,patScale)
-        column4=resCouList12[0]
+        column4=(resCouList12[0])[0]
 
         #判断目标数目
         maxlen=max(len(column1),len(column2),len(column3),tCount)
@@ -97,8 +97,7 @@ def everyData(pFilename,date,cTarget): #存储路径，数据日期，给出的�
             compCitylist_MoveIn.append([ID[i],name[i]])        
         time.sleep(1)
 
-    #迁出数据
-    for i in range(0, len(ID)):
+        #迁出数据
         moveOuturl = "http://huiyan.baidu.com/migration/cityrank.jsonp?dt=city&id="+str(ID[i])+"&type=move_out&date="+str(tDate)+"&callback=jsonp"        
         resCouList2=getData(moveOuturl,totalPat)
         column20 = name[i]
@@ -107,7 +106,7 @@ def everyData(pFilename,date,cTarget): #存储路径，数据日期，给出的�
         column23 = resCouList2[2]
         moveOutScaleurl = "http://huiyan.baidu.com/migration/historycurve.jsonp?dt=city&id="+str(ID[i])+"&type=move_out&callback=jsonp"
         resCouList22=getData(moveOutScaleurl,patScale)        
-        column24 = resCouList22[0]
+        column24 = (resCouList22[0])[0]
 
         maxlen2=max(len(column21),len(column22),len(column23),tCount)
         max2=max(len(column21),len(column22),len(column23)) 
@@ -144,7 +143,7 @@ def text_save(lgpath,list2w1,list2w2):   #日志路径，迁入列表，迁出�
     print("保存日志文件成功") 
 
 if __name__=='__main__':
-    date=[20200419]
+    date=[20200423]
     for i in date:
         print('开始抓取')
         fileName = 'F:/DataGet/BDqianxi/'+'Total'+str(i)+'.xls'
