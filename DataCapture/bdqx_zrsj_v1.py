@@ -120,7 +120,8 @@ def everyData(pFilename,date,cTarget): #存储路径，数据日期，给出的�
         for i4 in range(0,len(column23)):    
             sheet1.write(i4 + maxlen2*i + 1, 8, column23[i4])
         f.save(filename)
-        print (name[i],"out done")
+        cleft=len(ID)-i
+        print (name[i],"out done. 剩余",cleft,'个')
         if max2 < tCount:
             compCitylist_MoveOut.append([ID[i],name[i]]) 
         time.sleep(1)
@@ -143,7 +144,7 @@ def text_save(lgpath,list2w1,list2w2):   #日志路径，迁入列表，迁出�
     print("保存日志文件成功") 
 
 if __name__=='__main__':
-    date=[20200423]
+    date=[20200424]
     for i in date:
         print('开始抓取')
         fileName = 'F:/DataGet/BDqianxi/'+'Total'+str(i)+'.xls'
