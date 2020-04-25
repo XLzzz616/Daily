@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 '''
-@File         :bdqx_cncxqd_v1.py
-@Time         :2020/04/23 15:15:38
+@File         :bdqx_gmsj_v1.py
+@Time         :2020/04/23 11:14:46
 @Auther       :Xuz
-@Version      :1.0
-@Notes        :下载百度迁徙-城内出行强度数据
-              城内出行强度：该城市有出行的人数与该城市居住人口比值的指数化结果
+@Version      :1.1
+@Notes        :下载百度迁徙-迁徙规模指数数据
+              迁徙规模指数：反映迁入或迁出人口规模，城市间可横向对比
+              v1.1 xlwt长度限制,改用openpyxl
 '''
 from urllib import request
 import re
-import xlwt
+import openpyxl
 import requests
 import time
 
@@ -24,16 +25,6 @@ opener = request.build_opener()
 opener.add_headers = [headers]
 request.install_opener(opener)
 
-def set_style(name, height, bold=False):  #文本格式
-    style = xlwt.XFStyle()  # 初始化样式
-    font = xlwt.Font()  # 为样式创建字体
-    font.name = name  # 'Times New Roman'
-    font.bold = bold
-    font.color_index = 4
-    font.height = height
-    style.font = font
-    return style
-
 def getData(tarUrl,patList):    #根据url和数据格式获取数据，返回结果list
     connectUrl=tarUrl
     data=requests.get(connectUrl)
@@ -43,12 +34,15 @@ def getData(tarUrl,patList):    #根据url和数据格式获取数据，返回�
         res.append(result)
     return res
 
-def innerData(pFilename,cDate):             #存储路径,抓取时间
-    f = xlwt.Workbook()
-    sheet1 = f.add_sheet(u'2019年城内出行强度', cell_overwrite_ok=True)
-    sheet2 = f.add_sheet(u'2020年城内出行强度', cell_overwrite_ok=True)
+def scaleData(pFilename,startDate,endDate): #存储路径，起止时间
+    f = openpyxl.Workbook()
+    sheet1 = f.active
+    sheet1.title="2019年迁徙规模指数"
+    #sheet1=f.create_sheet(title="2019年迁徙规模指数")    
+    sheet2=f.create_sheet(title="2020年迁徙规模指数")
 
-    curDate=cDate
+    sDate=startDate
+    eDate=endDate
     filename=pFilename
     
     #2019和2020年数据格式
@@ -56,44 +50,80 @@ def innerData(pFilename,cDate):             #存储路径,抓取时间
     patData2019 = '"2019.*?":(\d+\.*\d.*?)\D'
     patDate2020 = '"(2020.*?)":\d+\.*\d.*?\D'
     patData2020 = '"2020.*?":(\d+\.*\d.*?)\D'  
-    #城内出行总pat
+    #规模指数总pat
     patScale=[patDate2019,patData2019,patDate2020,patData2020]
 
-    sheet1.write(0,0,u'城市',set_style('Times New Roman', 200, True))
-    sheet2.write(0,0,u'城市',set_style('Times New Roman', 200, True))
+    #全国数据
+    countryUrlin="http://huiyan.baidu.com/migration/historycurve.jsonp?dt=country&id=0&type=move_in&startDate="+str(sDate)+"&endDate="+str(eDate)+"&callback=jsonp"
+    resCouList1=getData(countryUrlin,patScale)
+    row0_19=resCouList1[0]
+    row1_19=resCouList1[1]
+    row0_20=resCouList1[2]
+    row1_20=resCouList1[3]
+    sheet1.cell(1,1,u'城市')
+    sheet1.cell(2,1,u'全国')
+    sheet2.cell(1,1,u'城市')
+    sheet2.cell(2,1,u'全国')
+    for i1 in range(0,len(row0_19)):
+        sheet1.cell(1,2*i1+2,'t'+row0_19[i1]+'迁入') 
+        sheet1.cell(2,2*i1+2,float(row1_19[i1])*10000)
+    for i2 in range(0,len(row0_20)):
+        sheet2.cell(1,2*i2+2,'t'+row0_20[i2]+'迁入') 
+        sheet2.cell(2,2*i2+2,float(row1_20[i2])*10000)
+    countryUrlout="http://huiyan.baidu.com/migration/historycurve.jsonp?dt=country&id=0&type=move_out&startDate="+str(sDate)+"&endDate="+str(eDate)+"&callback=jsonp"  
+    resCouList2=getData(countryUrlout,patScale)
+    r2ow0_19=resCouList2[0]
+    r2ow1_19=resCouList2[1]
+    r2ow0_20=resCouList2[2]
+    r2ow1_20=resCouList2[3]
+    for i1 in range(0,len(r2ow0_19)):
+        sheet1.cell(1,2*i1+3,'t'+r2ow0_19[i1]+'迁出') 
+        sheet1.cell(2,2*i1+3,float(r2ow1_19[i1])*10000)
+    for i2 in range(0,len(r2ow0_20)):
+        sheet2.cell(1,2*i2+3,'t'+r2ow0_20[i2]+'迁出') 
+        sheet2.cell(2,2*i2+3,float(r2ow1_20[i2])*10000)
     
-    #城内活动强度数据
+    #迁入数据
     for i in range(0,len(ID)):
-        CInnerUrl="http://huiyan.baidu.com/migration/internalflowhistory.jsonp?dt=city&id="+str(ID[i])+"&date="+str(curDate)+"&callback=jsonp"
-        reslistIn=getData(CInnerUrl,patScale)
+        cityUrlin = "http://huiyan.baidu.com/migration/historycurve.jsonp?dt=city&id="+str(ID[i])+"&type=move_in&startDate="+str(sDate)+"&endDate="+str(eDate)+"&callback=jsonp"
+        reslistIn=getData(cityUrlin,patScale)
         row19_0=reslistIn[0]
         row19_i=reslistIn[1]
         row20_0=reslistIn[2]
         row20_i=reslistIn[3]
-        #写入第一行
-        if i == 0:
-            for i1 in range(0,len(row19_0)):
-                sheet1.write(0,i1+1,row19_0[i1],set_style('Times New Roman', 200, True)) 
-            for i2 in range(0,len(row20_0)):
-                sheet2.write(0,i2+1,row20_0[i2],set_style('Times New Roman', 200, True)) 
-        #写入城市列
-        sheet1.write(i+1,0,name[i])
-        sheet2.write(i+1,0,name[i])
-        #写入数据
+        #写入城市
+        sheet1.cell(i+3,1,name[i]) 
+        sheet2.cell(i+3,1,name[i])
         for i1 in range(0,len(row19_0)):
-            sheet1.write(i+1,i1+1,row19_i[i1])  
+            sheet1.cell(i+3,2*i1+2,float(row19_i[i1])*10000)  
         for i2 in range(0,len(row20_0)):
-            sheet2.write(i+1,i2+1,row20_i[i2])
+            sheet2.cell(i+3,2*i2+2,float(row20_i[i2])*10000)
         f.save(filename)
-        print (name[i],"done")
-        time.sleep(1)
+        print (name[i],"in done")
+        #time.sleep(1)
+        #迁出数据    
+        cityUrlout = "http://huiyan.baidu.com/migration/historycurve.jsonp?dt=city&id="+str(ID[i])+"&type=move_out&startDate="+str(sDate)+"&endDate="+str(eDate)+"&callback=jsonp"
+        reslistOut=getData(cityUrlout,patScale)
+        r2ow19_0=reslistOut[0]
+        r2ow19_i=reslistOut[1]
+        r2ow20_0=reslistOut[2]
+        r2ow20_i=reslistOut[3]
+        for i1 in range(0,len(r2ow19_0)):
+            sheet1.cell(i+3,2*i1+3,float(r2ow19_i[i1])*10000)
+        for i2 in range(0,len(r2ow20_0)):
+            sheet2.cell(i+3,2*i2+3,float(r2ow20_i[i2])*10000)
+        f.save(filename)
+        cleft=len(ID)-i 
+        print (name[i],"out done. 剩余",cleft,'个')
+        time.sleep(2)
     
     print("规模数据抓取成功")
 
 if __name__=='__main__':    
-    currentdate='201900424'
-    filename = 'F:/DataGet/BDqianxi/'+'innerdata_'+str(currentdate)+'.xls'    
+    startdate='20190112'
+    enddate='20200424'
+    filename = 'F:/DataGet/BDqianxi/'+'scaledata_'+str(enddate)+'.xlsx'    
     print('开始抓取')
-    innerData(filename,currentdate)
+    scaleData(filename,startdate,enddate)
     print('结束抓取')
     #time.sleep(300)
