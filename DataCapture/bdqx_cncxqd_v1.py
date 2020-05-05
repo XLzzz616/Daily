@@ -88,10 +88,10 @@ def innerData(pFilename,cDate):             #存储路径,抓取时间
         print (name[i],"done")
         time.sleep(1)
     
-    print("规模数据抓取成功")
+    print("城内出行数据抓取成功")
 
 if __name__=='__main__':    
-    currentdate='201900424'
+    currentdate='201900503'
     filename = 'F:/DataGet/BDqianxi/'+'innerdata_'+str(currentdate)+'.xls'    
     print('开始抓取')
     innerData(filename,currentdate)

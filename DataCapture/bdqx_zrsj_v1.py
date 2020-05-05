@@ -144,7 +144,7 @@ def text_save(lgpath,list2w1,list2w2):   #日志路径，迁入列表，迁出�
     print("保存日志文件成功") 
 
 if __name__=='__main__':
-    date=[20200424]
+    date=[20200503,20200502,20200501]
     for i in date:
         print('开始抓取')
         fileName = 'F:/DataGet/BDqianxi/'+'Total'+str(i)+'.xls'

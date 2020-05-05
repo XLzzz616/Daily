@@ -38,7 +38,7 @@ def set_style(name, height, bold=False):  #文本格式
 
 def getData(tarUrl,patList):    #根据url和数据格式获取数据，返回结果list
     connectUrl=tarUrl
-    data=requests.get(connectUrl)
+    data=requests.get(connectUrl, timeout=(15, 15))
     res=[]
     for i in range(0,len(patList)):
         result = re.compile(patList[i]).findall(str(data.content.decode("utf-8")).encode("utf-8").decode("unicode_escape"))      
@@ -118,7 +118,7 @@ def everyData_Period(pFilename,date,cTarget,cDate): #存储路径，数据区间
         f.save(filename)
         if max1 < tCount:
             compCitylist_MoveIn.append([ID[i],name[i]])        
-        time.sleep(1)
+        #time.sleep(1)
 
         #迁出数据
         moveOuturl = "http://huiyan.baidu.com/migration/cityrank.jsonp?dt=city&id="+str(ID[i])+"&type=move_out&date="+str(tDate)+"&callback=jsonp"        
@@ -146,7 +146,7 @@ def everyData_Period(pFilename,date,cTarget,cDate): #存储路径，数据区间
         print (name[i],"out done. 剩余",cleft,'个')
         if max2 < tCount:
             compCitylist_MoveOut.append([ID[i],name[i]]) 
-        time.sleep(1)
+        time.sleep(1.2)
     print (str(tDate),"抓取成功") 
     return compCitylist_MoveIn,compCitylist_MoveOut
 
@@ -167,7 +167,7 @@ def text_save(lgpath,list2w1,list2w2):   #日志路径，迁入列表，迁出�
 
 if __name__=='__main__':
     dateClass=[1,3]
-    dataCurrent='20200424'
+    dataCurrent='20200430'
     for i in dateClass:
         print('开始抓取')
         fileName = 'F:/DataGet/BDqianxi/'+str(i)+'Period_City'+str(dataCurrent)+'.xls'

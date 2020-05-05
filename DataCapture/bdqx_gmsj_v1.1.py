@@ -6,7 +6,7 @@
 @Auther       :Xuz
 @Version      :1.1
 @Notes        :下载百度迁徙-迁徙规模指数数据
-              迁徙规模指数：反映迁入或迁出人口规模，城市间可横向对比
+              v1.0 迁徙规模指数：反映迁入或迁出人口规模，城市间可横向对比
               v1.1 xlwt长度限制,改用openpyxl
 '''
 from urllib import request
@@ -121,7 +121,7 @@ def scaleData(pFilename,startDate,endDate): #存储路径，起止时间
 
 if __name__=='__main__':    
     startdate='20190112'
-    enddate='20200424'
+    enddate='20200502'
     filename = 'F:/DataGet/BDqianxi/'+'scaledata_'+str(enddate)+'.xlsx'    
     print('开始抓取')
     scaleData(filename,startdate,enddate)
