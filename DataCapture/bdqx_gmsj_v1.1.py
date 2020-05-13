@@ -115,13 +115,13 @@ def scaleData(pFilename,startDate,endDate): #存储路径，起止时间
         f.save(filename)
         cleft=len(ID)-i 
         print (name[i],"out done. 剩余",cleft,'个')
-        time.sleep(2)
+        time.sleep(1)
     
     print("规模数据抓取成功")
 
 if __name__=='__main__':    
     startdate='20190112'
-    enddate='20200502'
+    enddate='20200506'
     filename = 'F:/DataGet/BDqianxi/'+'scaledata_'+str(enddate)+'.xlsx'    
     print('开始抓取')
     scaleData(filename,startdate,enddate)
